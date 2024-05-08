@@ -20,7 +20,8 @@ const schema = yup.object().shape({
     isActive: yup.string().required("IsActive is a required field"),
 });
 const CreateProject = (props: creatTaskProps) => {
-    const { createProjectFormStatus } = useSelector((state: any) => state.projectList);
+    const { IProject: { data, count }, createProjectFormStatus } = useSelector((state: any) => state.projectList);
+    // const { createProjectFormStatus } = useSelector((state: any) => state.projectList);
     const dispatch = useAppDispatch();
     const {
         register,
@@ -32,14 +33,12 @@ const CreateProject = (props: creatTaskProps) => {
         console.log(projectData);
     };
     useEffect(() => {
-        if (createProjectFormStatus === stateStatus.succeeded) {
-            toast.success('User Created Successfully');
+        if (createProjectFormStatus === ApiStatus.success) {
+            toast.success('Project Created Successfully');
             props.onClose(false)
         }
-    }, [createProjectFormStatus])
-    useEffect(() => {
-        if (createProjectFormStatus === stateStatus.failed) {
-            toast.success('User Created Successfully');
+        if (createProjectFormStatus === ApiStatus.error) {
+            toast.success('Project Creation Faild');
             props.onClose(false)
         }
     }, [createProjectFormStatus])

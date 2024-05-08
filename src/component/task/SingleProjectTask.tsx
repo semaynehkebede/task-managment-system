@@ -55,7 +55,7 @@ const SingleProjectTask = () => {
                                     <Table.Th className='px-6 py-3'>Title</Table.Th>
                                     <Table.Th className='px-6 py-3'>Description</Table.Th>
                                     <Table.Th className='px-6 py-3'>Priority</Table.Th>
-                                    <Table.Th className='px-6 py-3'>Assigned</Table.Th>
+                                    {/* <Table.Th className='px-6 py-3'>Assigned</Table.Th> */}
                                     <Table.Th className='px-6 py-3'>Project Id</Table.Th>
                                     <Table.Th className='px-6 py-3'>Status</Table.Th>
                                     <Table.Th className='px-6 py-3'>Due Date</Table.Th>

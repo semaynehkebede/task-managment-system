@@ -1,5 +1,5 @@
-import { Button, Paper, Stack, TextInput, Textarea } from '@mantine/core';
-import React, { useEffect } from 'react'
+import { Button, Paper, Stack, TextInput, Textarea, Select, ComboboxItem } from '@mantine/core';
+import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form';
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -8,7 +8,7 @@ import { getProjectListAction } from '../../reduxToolkit/ProjectSlice';
 import { getUserListAction } from '../../reduxToolkit/UserSlice';
 import { createTaskAction } from '../../reduxToolkit/TaskSlice';
 import { useAppDispatch } from '../../hooks/Hooks';
-import { ApiStatus, ITaskFormInput } from './TaskType';
+import { ApiStatus, ITaskFormInput, TaskStatusLists } from './TaskType';
 import { toast } from 'react-toastify';
 
 type creatTaskProps = {
@@ -41,21 +41,24 @@ const CreateTask = (props: creatTaskProps) => {
         formState: { errors },
     } = useForm<ITaskFormInput>({ resolver: yupResolver(schema) });
 
+
+    // const [selectedValue, setValue] = useState<ComboboxItem | null>(null);
     useEffect(() => {
         dispatch<any>(getUserListAction());
         dispatch<any>(getProjectListAction());
     }, []);
     const onSubmit = (taskData: ITaskFormInput) => {
         dispatch(createTaskAction(taskData));
-        console.log(data);
+        console.log("Registered", taskData);
     };
 
     useEffect(() => {
         if (createTaskFormStatus === ApiStatus.success) {
-            toast.success('User Created Successfully');
+            toast.success('Task Created Successfully');
             props.onClose(false)
         }
     }, [createTaskFormStatus])
+
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
             <Paper p={30} mt={3} radius="md">
@@ -78,7 +81,16 @@ const CreateTask = (props: creatTaskProps) => {
 
                     <TextInput {...register('dueDate')} type="date" label="Due Date" placeholder="Due Date" />
                     {errors.dueDate && <p className='text-red-500'>{errors.dueDate.message}</p>}
-                    <TextInput {...register('status')} type="text" label="Status" placeholder="Status" />
+                    <select
+                        {...register('status')}>
+                        <option value="">Select Status</option>
+                        <option value="backlog">Backlog</option>
+                        <option value="inqueue">In Queue</option>
+                        <option value="inprogress">In Progress</option>
+                        <option value="onhold">On Hold</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                    {/* <TextInput {...register('status')} type="text" label="Status" placeholder="Status" /> */}
                     {errors.status && <p className='text-red-500'>{errors.status.message}</p>}
                     <select {...register('assigneeId')}>
                         <option value="">Assign To</option>

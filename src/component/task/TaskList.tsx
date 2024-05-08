@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { getTaskListAction, getUserTaskListAction } from '../../reduxToolkit/TaskSlice';
+import { deleteTaskAction, getTaskListAction, getUserTaskListAction } from '../../reduxToolkit/TaskSlice';
 import { useAppDispatch } from '../../hooks/Hooks';
-import { Button, Modal, Table } from '@mantine/core';
+import { Button, Modal, Pagination, Table } from '@mantine/core';
 import CreateTask from './CreateTask';
 import UpdateTask from './UpdateTask';
 import ArchiveTask from './ArchiveTask';
 import { getRole, getUserId } from '../../configuration/RoleConfig';
 import { getUserByIdAction } from '../../reduxToolkit/UserSlice';
+import UpdateUserTask from './UpdateUserTask';
+import { ApiStatus } from './TaskType';
+import { toast } from 'react-toastify';
 
 
 const TaskList = () => {
@@ -24,40 +27,60 @@ const TaskList = () => {
     const [OpenDeleteModal, setOpenDeleteModal] = useState(false);
 
     const { IProject, projectStatus } = useSelector((state: any) => state.projectList);
-    const { task: { data, count }, taskStatus } = useSelector((state: any) => state.taskList);
+    const { task: { data, count }, taskStatus, deleteStatus } = useSelector((state: any) => state.taskList);
     const { list: { data: userData, count: uCount }, listStatus } = useSelector((state: any) => state.userList);
-    console.log("from task", data);
+    const [currentPage, setCurrentPage] = useState(1);
+    const recordsPerPage = 5;
+    const [skip, setSkip] = useState(0);
+    const nPage = Math.ceil(count / recordsPerPage);
 
     const onSubmitDelete = async (selectedData: any) => {
-        alert(selectedData);
-        // await deleteTask(selectedData.id);
-        // refetch();
+        await dispatch(deleteTaskAction(selectedData.id));
+    }
+    const handlePageClick = (newPage: any) => {
+        setCurrentPage(newPage);
+        const skipNo = (newPage - 1) * recordsPerPage;
+        setSkip(skipNo);
+        console.log("skip=", skip, "Curr page=", newPage, "currentPage", currentPage);
     }
     const formatDate = (dateString: any) => {
         const date = new Date(dateString);
         return date.toLocaleDateString();
     };
-    const getProjectName = async (proId: string) => {
-        const projects = await IProject?.data?.find((project: any) => project.id === proId);
-        return projects.title;
-    }
     useEffect(() => {
         if (isAdmin) {
-            dispatch(getTaskListAction())
+            dispatch(getTaskListAction(skip))
+            console.log("in useeffect", skip)
         }
         else {
             dispatch(getUserByIdAction(userId))
             dispatch(getUserTaskListAction())
         }
-    }, []);
+    }, [currentPage]);
+    useEffect(() => {
+        if (deleteStatus === ApiStatus.success) {
+            toast.success('Task Deleted Successfully');
+            setOpenDeleteModal(false)
+        }
+        if (deleteStatus === ApiStatus.error) {
+            toast.error('Some Thing Error');
+        }
+
+    }, [deleteStatus])
     const taskList = data?.map((task: any, index: number) => (
         <Table.Tr key={task.id} className='odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700'>
             <Table.Td className='px-6 py-4'>{index + 1}</Table.Td>
             <Table.Td className='px-6 py-4'>{task.title}</Table.Td>
             <Table.Td className='px-6 py-4'>{task.description}</Table.Td>
             <Table.Td className='px-6 py-4'>{task.priority}</Table.Td>
-            <Table.Td className='px-6 py-4'>{task.assigneeId}</Table.Td>
-            {/* <Table.Td className='px-6 py-4'>{getProjectName(task?.projectId)}</Table.Td> */}
+            {isAdmin ?
+                <Table.Td className='px-6 py-4'>{task?.assignee?.name}</Table.Td>
+                : ''
+            }
+            {isAdmin ?
+                <Table.Td className='px-6 py-4'>{task?.project?.title}</Table.Td>
+                : ''
+            }
             <Table.Td className='px-6 py-4'>{task.status}</Table.Td>
             <Table.Td className='px-6 py-4'>{task.dueDate}</Table.Td>
             <Table.Td className='px-6 py-4'>{task.tags?.join(' ,')}</Table.Td>
@@ -65,27 +88,27 @@ const TaskList = () => {
             {/* <Table.Td className='px-6 py-4'>{task.tags?.map((tag: any) => `${tag}, `)}</Table.Td> */}
             <Table.Td className='px-6 py-4'>{formatDate(task.createdAt)}</Table.Td>
             <Table.Td className='px-6 py-4'>
-                <a onClick={() => {
+                <NavLink to={''} onClick={() => {
                     setOpenTaskUpdateModal(true)
                     setSelectedData(task);
                 }} className="font-medium text-blue-600 dark:text-blue-500 hover:bg-amber-500 hover:text-white hover:cursor-pointer ml-2 mr-2 ">
                     Edit
-                </a>
+                </NavLink>
                 {isAdmin ?
-                    <a onClick={() => {
+                    <NavLink to={''} onClick={() => {
                         setOpenTaskArchiveModal(true)
                         setSelectedData(task);
                         // setSelectedData(data);
                     }} className="font-medium text-yellow-600 dark:text-blue-500 hover:bg-amber-500 hover:text-white hover:cursor-pointer">
                         Archive
-                    </a> : ''}
-                {isAdmin ? <a onClick={() => {
+                    </NavLink> : ''}
+                {isAdmin ? <NavLink to={''} onClick={() => {
                     setOpenDeleteModal(true)
                     setSelectedData(task);
                     // setSelectedData(data);
                 }} className="font-medium text-red-600 dark:text-blue-500 hover:bg-red-700 hover:text-white ml-2 mr-2 hover:cursor-pointer">
                     Delete
-                </a> : ''}
+                </NavLink> : ''}
             </Table.Td>
         </Table.Tr>
     ));
@@ -100,12 +123,13 @@ const TaskList = () => {
                         : ''
                 }
                 {isAdmin ?
-                    <span className='bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full w-32 place-self-end'>
+                    <span className='bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full w-30 place-self-end'>
                         <NavLink to={''} onClick={() => {
                             setOpenCreateModal(true)
                             setSelectedData({});
                             // setSelectedData(data);
-                        }} >Add Task</NavLink>
+                        }} >Add Task
+                        </NavLink>
                     </span> : ''
                 }
                 <div className='overflow-x-auto'>
@@ -117,8 +141,16 @@ const TaskList = () => {
                                     <Table.Th className='px-6 py-3'>Title</Table.Th>
                                     <Table.Th className='px-6 py-3'>Description</Table.Th>
                                     <Table.Th className='px-6 py-3'>Priority</Table.Th>
-                                    <Table.Th className='px-6 py-3'>Assigned</Table.Th>
-                                    <Table.Th className='px-6 py-3'>Project Id</Table.Th>
+                                    {
+                                        isAdmin ?
+                                            <Table.Th className='px-6 py-3'>Assigned</Table.Th>
+                                            : ''
+                                    }
+                                    {
+                                        isAdmin ?
+                                            <Table.Th className='px-6 py-3'>On Project</Table.Th>
+                                            : ''
+                                    }
                                     <Table.Th className='px-6 py-3'>Status</Table.Th>
                                     <Table.Th className='px-6 py-3'>Due Date</Table.Th>
                                     <Table.Th className='px-6 py-3'>Tags</Table.Th>
@@ -131,6 +163,13 @@ const TaskList = () => {
                         </Table>
                     </div>
                 </div>
+                {
+                    isAdmin ?
+                        <div className='flex justify-center mt-9'>
+                            <Pagination total={nPage} onChange={handlePageClick} />
+                        </div>
+                        : ''
+                }
             </div>
             <Modal opened={OpenCreateModal} onClose={() => {
                 setOpenCreateModal(false)
@@ -147,8 +186,14 @@ const TaskList = () => {
             }} centered
                 title="Update Task"
             >
-                <UpdateTask selectedItem={selectedData} onClose={(isOpened: boolean) => setOpenTaskUpdateModal(isOpened)
-                } />
+                {
+                    isAdmin ?
+                        <UpdateTask selectedItem={selectedData} onClose={(isOpened: boolean) => setOpenTaskUpdateModal(isOpened)
+                        } />
+                        :
+                        <UpdateUserTask selectedItem={selectedData} onClose={(isOpened: boolean) => setOpenTaskUpdateModal(isOpened)
+                        } />
+                }
             </Modal>
             <Modal opened={openTaskArchiveModal} onClose={() => {
                 setOpenTaskArchiveModal(false)

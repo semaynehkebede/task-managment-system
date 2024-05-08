@@ -1,6 +1,10 @@
 import React from 'react'
+import { useSelector } from 'react-redux';
 
 const Home = () => {
+    const { IProject: { pdata, pcount }, projectStatus, deleteProjectStatus } = useSelector((state: any) => state.projectList);
+    const { list: { udata, ucount }, listStatus } = useSelector((state: any) => state.userList);
+    const { task: { tdata, tcount }, taskStatus, deleteStatus } = useSelector((state: any) => state.taskList);
     return (
         <div>
             <div className="container relative flex flex-col justify-between h-full max-w-6xl px-10 mx-auto xl:px-0 mt-5">
@@ -15,7 +19,7 @@ const Home = () => {
                                         <h3 className="my-2 ml-3 text-lg font-bold text-gray-800">Total Projects</h3>
                                     </div>
                                     <p className="mt-3 mb-1 text-xs font-medium text-indigo-500 uppercase">------------</p>
-                                    {/* <p className="mb-2 text-gray-600">{totalProject}</p> */}
+                                    {/* <p className="mb-2 text-gray-600">{pcount}</p> */}
                                 </div>
                             </div>
                         </div>
@@ -40,7 +44,7 @@ const Home = () => {
                                     <div className="flex items-center content-center">
                                         <h3 className="text-lg font-bold text-gray-800 content-center">Total Tasks</h3>
                                     </div>
-                                    {/* <p className="mb-2 text-gray-600">{totalTask}</p> */}
+                                    {/* <p className="mb-2 text-gray-600">{tcount}</p> */}
                                 </div>
                             </div>
                         </div>

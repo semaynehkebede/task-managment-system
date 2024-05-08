@@ -6,7 +6,6 @@ import { Button, Paper, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { loginUser, setUser } from '../reduxToolkit/auth/LoginSlice';
 import { AppDispatch, RootState } from '../reduxToolkit/Store';
 import { useAppDispatch } from '../hooks/Hooks';
-import { setCredentials } from '../reduxToolkit/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { getRole } from '../configuration/RoleConfig';
 interface IFormInput {
@@ -35,9 +34,11 @@ const LoginPage = () => {
     const onSubmit = (data: IFormInput) => {
         dispatch(loginUser(data)).then((result) => {
             if (result.payload) {
-                dispatch(setUser(result.payload))
-                const isAdmin = getRole();
-                console.log("Login", isAdmin);
+                dispatch(setUser(result.payload));
+                const data = localStorage.getItem("user");
+                const user = data ? JSON.parse(data) : '';
+                const isAdmin = user.role;
+                console.log(isAdmin);
                 {
                     isAdmin ? navigate("/admin") : navigate("/user");
                 }

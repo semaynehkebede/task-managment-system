@@ -7,7 +7,10 @@ import { getRole } from '../../configuration/RoleConfig'
 import { UserNavbar } from '../users/UserNavbar'
 
 const Layout = () => {
-    const isAdmin = getRole();
+    // const isAdmin = getRole();
+    const data = localStorage.getItem("user");
+    const user = data ? JSON.parse(data) : '';
+    const isAdmin = user.role;
     return (
         <>
             <AppShell>

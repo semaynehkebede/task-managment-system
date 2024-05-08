@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ApiStatus, IProjectUpdateInput, stateStatus, updateProjectProps } from './ProjectType';
-import { createProjectAction, updateProjectAction } from '../../reduxToolkit/ProjectSlice';
+import { updateProjectAction } from '../../reduxToolkit/ProjectSlice';
 import { useAppDispatch } from '../../hooks/Hooks';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
@@ -53,8 +53,9 @@ const UpdateProject = (props: updateProjectProps) => {
                         <option value="">Is Active</option>
                         <option value="true">Active</option>
                         <option value="false">In Active</option>
-                    </select></Stack>
-                {errors.isActive && <p className='text-red-500'>{errors.isActive.message}</p>}
+                    </select>
+                    {errors.isActive && <p className='text-red-500'>{errors.isActive.message}</p>}
+                </Stack>
                 <Button fullWidth mt="xl" type="submit">
                     Update
                 </Button>

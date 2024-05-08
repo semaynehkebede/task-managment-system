@@ -2,13 +2,13 @@ import { Button, Modal, Table } from '@mantine/core';
 import React, { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../hooks/Hooks';
-import { getProjectListAction } from '../../reduxToolkit/ProjectSlice';
+import { deleteProjectAction, getProjectListAction } from '../../reduxToolkit/ProjectSlice';
 import { useSelector } from 'react-redux';
-import { stateStatus } from '../task/TaskType';
 import CreateProject from './CreateProject';
 import ArchiveTask from './ArchiveTask';
 import UpdateProject from './UpdateProject';
-import { projectResponce } from './ProjectType';
+import { ApiStatus, projectResponce } from './ProjectType';
+import { toast } from 'react-toastify';
 
 const ProjectList = () => {
     const [OpenCreateModal, setOpenCreateModal] = useState(false);
@@ -16,52 +16,56 @@ const ProjectList = () => {
     const [openProjectArchiveModal, setOpenProjectArchiveModal] = useState(false);
     const [OpenDeleteModal, setOpenDeleteModal] = useState(false);
     const [selectedData, setSelectedData] = useState<any>();
-    const { IProject: { data, count }, projectStatus } = useSelector((state: any) => state.projectList);
+    const { IProject: { data, count }, projectStatus, deleteProjectStatus } = useSelector((state: any) => state.projectList);
     const dispatch = useAppDispatch();
     useEffect(() => {
         dispatch(getProjectListAction());
     }, []);
     const onSubmitDelete = async (selectedData: any) => {
-        console.log(selectedData.id);
-        alert(selectedData);
-        // await deleteTask(selectedData.id);
-        // refetch();
+        dispatch(deleteProjectAction(selectedData.id))
     }
-
+    const formatDate = (dateString: any) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString();
+    };
+    useEffect(() => {
+        if (deleteProjectStatus === ApiStatus.success) {
+            toast.success('Project Deleted Successfully');
+            setOpenDeleteModal(false);
+        }
+    }, [deleteProjectStatus])
     const projectLists = data?.map((project: projectResponce, index: number) => (
         <Table.Tr key={project.id} className='odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700'>
             <Table.Td className='px-6 py-4'>{index + 1}</Table.Td>
             <Table.Td className='px-6 py-4'>{project.title}</Table.Td>
             <Table.Td className='px-6 py-4'>{project.description}</Table.Td>
             <Table.Td className='px-6 py-4'>{project.isActive ? "Active" : "In Active"}</Table.Td>
-            {/* <Table.Td className='px-6 py-4'>{project.createdAt.toISOString()}</Table.Td> */}
+            <Table.Td className='px-6 py-4'>{formatDate(project.createdAt)}</Table.Td>
             <Table.Td className='px-6 py-4'>
                 <NavLink to={`${project.id}`}>
                     <a onClick={() => {
                     }} className="font-medium text-green-600 dark:text-blue-500 hover:bg-amber-500 hover:text-white hover:cursor-pointer">
-                        Task
+                        Task{project.isActive}
                     </a>
                 </NavLink>
-                <a onClick={() => {
+                <NavLink to={''} onClick={() => {
                     setOpenProjectUpdateModal(true)
                     setSelectedData(project);
                 }} className="font-medium text-blue-600 dark:text-blue-500 hover:bg-amber-500 hover:text-white hover:cursor-pointer ml-2 mr-2 ">
                     Edit
-                </a>
-                <a onClick={() => {
+                </NavLink>
+                <NavLink to={''} onClick={() => {
                     setOpenProjectArchiveModal(true)
                     setSelectedData(project);
-                    // setSelectedData(data);
                 }} className="font-medium text-yellow-600 dark:text-blue-500 hover:bg-amber-500 hover:text-white hover:cursor-pointer">
                     Archive
-                </a>
-                <a onClick={() => {
+                </NavLink>
+                <NavLink to={''} onClick={() => {
                     setOpenDeleteModal(true)
                     setSelectedData(project);
-                    // setSelectedData(data);
                 }} className="font-medium text-red-600 dark:text-blue-500 hover:bg-red-700 hover:text-white ml-2 mr-2 hover:cursor-pointer">
                     Delete
-                </a>
+                </NavLink>
             </Table.Td>
         </Table.Tr>
     ));
@@ -73,7 +77,6 @@ const ProjectList = () => {
                     <NavLink onClick={() => {
                         setOpenCreateModal(true)
                         setSelectedData({});
-                        // setSelectedData(data);
                     }} to={''} >Add Project</NavLink>
                 </span>
                 <div className='overflow-x-auto'>
@@ -85,18 +88,18 @@ const ProjectList = () => {
                                     <Table.Th className='px-6 py-3'>Title</Table.Th>
                                     <Table.Th className='px-6 py-3'>Description</Table.Th>
                                     <Table.Th className='px-6 py-3 '>Is Active</Table.Th>
-                                    {/* <Table.Th className='px-6 py-3 '>Created At</Table.Th> */}
+                                    <Table.Th className='px-6 py-3 '>Created At</Table.Th>
                                     <Table.Th className='px-6 py-3'>Action</Table.Th>
                                 </Table.Tr>
                             </Table.Thead>
 
-                            {projectStatus === stateStatus.pending && <tbody className="divide-y divide-gray-200"><h1>
-                                Project List is loading</h1></tbody>}
-                            {projectStatus === stateStatus.failed && (
-                                <tbody className="divide-y divide-gray-200"><h1>
-                                    Error Occured</h1></tbody>
+                            {projectStatus === ApiStatus.loading && <tbody className="divide-y divide-gray-200">
+                                Project List is loading</tbody>}
+                            {projectStatus === ApiStatus.error && (
+                                <tbody className="divide-y divide-gray-200">
+                                    Error Occured</tbody>
                             )}
-                            {projectStatus === stateStatus.succeeded &&
+                            {projectStatus === ApiStatus.success &&
                                 <Table.Tbody>{projectLists}</Table.Tbody>
                             }
                         </Table>

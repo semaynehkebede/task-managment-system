@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import endPoint from "../../configuration/Config";
 import { api } from "../../configuration/AxiosConfig";
+import { passwordData } from "../../component/user/ChangePassword";
 
 export interface User {
     id: string;
@@ -24,11 +25,22 @@ const initialState: AuthState = {
     loading: false,
     error: null
 };
+export const changePasswordApi = async (data: any) => {
+    return await api.post(endPoint.changePassword, data);
+}
 ////////////////////1 AsyncThunk////////////////
 export const loginUser = createAsyncThunk<User, UserCredentials>(
     'auth/user/loginUser',
     async (credentials: UserCredentials) => {
         const response = await createLoginApi(credentials);
+        return await response.data;
+    }
+);
+
+export const changePassword = createAsyncThunk(
+    'auth/user/changePassword',
+    async (passwordData: passwordData) => {
+        const response = await changePasswordApi(passwordData);
         return await response.data;
     }
 );
@@ -60,26 +72,42 @@ const loginSlice = createSlice({
         }
     },
     extraReducers: (builder) => {
-        builder
-            .addCase(loginUser.pending, state => {
-                state.currentUser = null;
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(loginUser.fulfilled, (state, action) => {
-                state.loading = false;
-                state.currentUser = action.payload;
-                state.error = null;
-            })
-            .addCase(loginUser.rejected, (state, action) => {
-                state.currentUser = null;
-                state.loading = false;
-                if (action.payload) {
-                    state.error = action.payload as string;
-                } else {
-                    state.error = 'Failed user to login';
-                }
-            });
+        builder.addCase(loginUser.pending, state => {
+            state.currentUser = null;
+            state.loading = true;
+            state.error = null;
+        })
+        builder.addCase(loginUser.fulfilled, (state, action) => {
+            state.loading = false;
+            state.currentUser = action.payload;
+            state.error = null;
+        })
+        builder.addCase(loginUser.rejected, (state, action) => {
+            state.currentUser = null;
+            state.loading = false;
+            if (action.payload) {
+                state.error = action.payload as string;
+            } else {
+                state.error = 'Failed user to login';
+            }
+        });
+
+        builder.addCase(changePassword.pending, state => {
+            state.loading = true;
+        })
+        builder.addCase(changePassword.fulfilled, (state, action) => {
+            state.loading = false;
+            state.currentUser = action.payload;
+            state.error = null;
+        })
+        builder.addCase(changePassword.rejected, (state, action) => {
+            state.loading = false;
+            if (action.payload) {
+                state.error = action.payload as string;
+            } else {
+                state.error = 'Failed user to change Password';
+            }
+        });
     }
 });
 

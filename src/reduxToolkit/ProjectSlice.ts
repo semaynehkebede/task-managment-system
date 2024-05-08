@@ -32,20 +32,26 @@ export const createProjectApi = async (projectData: IProjectFormInput) => {
 export const updateProjectApi = async (updatedData: IProjectUpdateInput) => {
     return await api.put(endPoint.updateProject, updatedData);
 };
+export const deleteProjectApi = async (projectId: string) => {
+    const url = `${endPoint.deleteProject}${projectId}`;
+    console.log(url, projectId);
+    return await api.delete(url);
+};
 
 const initialState = {
     IProject: [],
-    projectStatus: stateStatus.ideal,
-    getProjectFormStatus: stateStatus,
-    updateProjectFormStatus: stateStatus.ideal,
-    createProjectFormStatus: stateStatus.ideal,
+    projectStatus: ApiStatus.ideal,
+    getProjectFormStatus: ApiStatus,
+    updateProjectFormStatus: ApiStatus.ideal,
+    createProjectFormStatus: ApiStatus.ideal,
+    deleteProjectStatus: ApiStatus.ideal,
 };
 
 export const getProjectListAction = createAsyncThunk(
     "projectList/getProjectListAction",
     async () => {
         const response = await getProjectListApi();
-        return response.data;
+        return await response.data;
     }
 );
 export const getProjectByIdAction = createAsyncThunk(
@@ -73,6 +79,14 @@ export const updateProjectAction = createAsyncThunk(
         return resu.data;
     }
 );
+export const deleteProjectAction = createAsyncThunk(
+    "projectList/deleteProjectAction",
+    async (projectId: string) => {
+        const response = await deleteProjectApi(projectId);
+        const resu = await getProjectListApi();
+        return await resu.data;
+    }
+);
 
 const projectSlice = createSlice({
     name: 'projectList',
@@ -80,55 +94,66 @@ const projectSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder.addCase(getProjectListAction.pending, (state, action) => {
-            state.projectStatus = stateStatus.pending
+            state.projectStatus = ApiStatus.loading
         });
         builder.addCase(getProjectListAction.fulfilled, (state, action) => {
-            state.projectStatus = stateStatus.succeeded
+            state.projectStatus = ApiStatus.success
             state.IProject = action.payload
         });
         builder.addCase(getProjectListAction.rejected, (state, action) => {
-            state.projectStatus = stateStatus.failed;
+            state.projectStatus = ApiStatus.success;
         });
 
 
         builder.addCase(getProjectByIdAction.pending, (state, action) => {
-            state.projectStatus = stateStatus.pending
+            state.projectStatus = ApiStatus.loading
         });
         builder.addCase(getProjectByIdAction.fulfilled, (state, action) => {
-            state.projectStatus = stateStatus.succeeded
+            state.projectStatus = ApiStatus.success
             state.IProject = action.payload
         });
         builder.addCase(getProjectByIdAction.rejected, (state, action) => {
-            state.projectStatus = stateStatus.failed;
+            state.projectStatus = ApiStatus.error;
         });
 
 
         builder.addCase(createProjectAction.pending, (state, action) => {
-            state.projectStatus = stateStatus.pending;
+            state.projectStatus = ApiStatus.loading;
         });
         builder.addCase(createProjectAction.fulfilled, (state, action) => {
-            state.projectStatus = stateStatus.pending;
+            state.projectStatus = ApiStatus.success;
             state.IProject = action.payload;
             // state.task.push(action.payload);
-            state.createProjectFormStatus = stateStatus.succeeded
+            state.createProjectFormStatus = ApiStatus.success;
             // toastSuccess("Cource created Successfully");
         });
         builder.addCase(createProjectAction.rejected, (state) => {
-            state.projectStatus = stateStatus.failed;
+            state.projectStatus = ApiStatus.error;
             // toastSuccess("Error while creating Cources");
         });
 
         builder.addCase(updateProjectAction.pending, (state, action) => {
-            state.updateProjectFormStatus = stateStatus.pending;
+            state.updateProjectFormStatus = ApiStatus.loading;
         });
         builder.addCase(updateProjectAction.fulfilled, (state, action) => {
-            state.updateProjectFormStatus = stateStatus.succeeded;
+            state.updateProjectFormStatus = ApiStatus.success;
             // state.IProject.push(action.payload);
             state.IProject = action.payload
         });
         builder.addCase(updateProjectAction.rejected, (state, action) => {
-            state.updateProjectFormStatus = stateStatus.failed;
+            state.updateProjectFormStatus = ApiStatus.error;
+        });
 
+        builder.addCase(deleteProjectAction.pending, (state, action) => {
+            state.projectStatus = ApiStatus.loading;
+        });
+        builder.addCase(deleteProjectAction.fulfilled, (state, action) => {
+            state.projectStatus = ApiStatus.success;
+            // state.IProject.push(action.payload);
+            state.IProject = action.payload
+        });
+        builder.addCase(deleteProjectAction.rejected, (state, action) => {
+            state.projectStatus = ApiStatus.error;
         });
     }
 });

@@ -9,12 +9,15 @@ import { useAppDispatch } from '../../hooks/Hooks';
 
 const links = [
     { link: 'dashboard', label: 'Dashboard' },
+    // { link: 'grouped/project', label: 'Gruoped' },
+
     {
         link: '#1',
         label: 'Project',
         links: [
             { link: 'project', label: 'List' },
-            { link: 'project/archived', label: 'Archived' },
+            { link: 'project/collection', label: 'Collection Data' },
+            // { link: 'project/archived', label: 'Archived' },
         ],
     },
     {
@@ -22,6 +25,7 @@ const links = [
         label: 'Task',
         links: [
             { link: 'task', label: 'List' },
+            // { link: 'task/p-list', label: 'PTask' },
             { link: 'task/archived', label: 'Archived' },
         ],
     },
@@ -30,10 +34,10 @@ const links = [
         label: 'User',
         links: [
             { link: 'user', label: 'List' },
-            { link: 'user/archived', label: 'Archived' },
+            // { link: 'user/archived', label: 'Archived' },
         ],
     },
-    { link: '/about', label: 'About' },
+    // { link: '/about', label: 'About' },
 ];
 export function Navbar() {
     const dispatch = useAppDispatch();

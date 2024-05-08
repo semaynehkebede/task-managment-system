@@ -31,9 +31,9 @@ export const getUserListAction = createAsyncThunk(
 export const getUserByIdAction = createAsyncThunk(
     "userById/getUserByIdAction",
     async (id: string) => {
-        // let id = "1234f"
         const response = await getUserByIdApi(id);
         console.log("asynch", response.data);
+        console.log(response.data);
         return await response.data;
     }
 );
@@ -69,13 +69,13 @@ export const userSlice = createSlice({
         });
 
 
-
         builder.addCase(getUserByIdAction.pending, (state, action) => {
             state.listStatus = stateStatus.loading;
         });
         builder.addCase(getUserByIdAction.fulfilled, (state, action) => {
             state.listStatus = stateStatus.success;
             state.list = action.payload;
+            console.log("In extra", action.payload);
         });
         builder.addCase(getUserByIdAction.rejected, (state, action) => {
             state.listStatus = stateStatus.error;

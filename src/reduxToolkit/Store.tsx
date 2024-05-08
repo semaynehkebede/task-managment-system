@@ -4,6 +4,8 @@ import { setupListeners } from "@reduxjs/toolkit/query";
 import projectReducer from "./ProjectSlice";
 import taskReducer from "./TaskSlice";
 import userReducer from "./UserSlice";
+import groupProjects from "./GroupProjectSlice";
+import collectionTasks from "./CollectionTaskSlice";
 
 export const store = configureStore({
     reducer: {
@@ -11,6 +13,8 @@ export const store = configureStore({
         projectList: projectReducer,
         taskList: taskReducer,
         userList: userReducer,
+        groupProject: groupProjects,
+        collectionTask: collectionTasks,
     }
 });
 

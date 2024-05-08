@@ -9,6 +9,8 @@ export interface ITaskState {
     taskListStatus: ApiStatus;
     createTaskFormStatus: ApiStatus;
     updateTaskFormStatus: ApiStatus;
+    deleteStatus: ApiStatus;
+    archiveStatus: ApiStatus
 }
 export type ITaskFormInput = {
     title: string,
@@ -23,23 +25,34 @@ export type ITaskFormInput = {
     dueDate: string,
 }
 export type ITaskUpdateInput = {
-    id: string
+    id: string,
     title: string,
     projectId: string,
     description: string,
     status: string,
     assigneeId: string,
-    // tags?: string[] | null;
     tags?: (string | undefined)[] | null;
     priority: string,
     dueDate: string,
+}
+export type IUpdateUserTask = {
+    id: string,
+    status: string,
+    tags: string
 }
 export type taskResponce = {
     id: string,
     title: string,
     description: string,
     status: string,
-    assigneeId: string,
+    project: {
+        title: string,
+        id: string,
+    }
+    assignee: {
+        id: string,
+        name: string,
+    },
     tags: [
         string
     ],
@@ -64,3 +77,15 @@ export interface updateTaskProps {
     selectedItem: taskResponce;
     onClose: (isOpened: boolean) => void;
 }
+export const TaskStatusLists = [
+    { label: 'Backlog', value: 'backlog' },
+    { label: 'In Queue', value: 'inqueue' },
+    { label: 'In Progress', value: 'inProgress' },
+    { label: 'On Hold', value: 'onHold' },
+    { label: 'Completed', value: 'completed' },
+];
+export type archiveInput = {
+    id: string,
+    reason: string,
+}
+
